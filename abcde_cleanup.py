@@ -108,6 +108,3 @@ def copy_all_to_ext(del_flag=False):
 if __name__ == "__main__":
     import sys
     my_function(sys.argv[1])
-
-
-
