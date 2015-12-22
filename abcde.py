@@ -4,6 +4,7 @@ import glob
 import io
 import os
 import shutil
+import datetime
 
 # 1. copy albums from newCDs to extHD mp3, ogg, flac folders.
 # 2. examine mp3, ogg, flac folders for missing albums.
@@ -13,6 +14,37 @@ import shutil
 #        (removing special characters and/or converting to ASCII)
 
 EXTS = ('flac', 'mp3', 'ogg')
+
+
+def main():
+    # tests
+    albumdir = '/home/plimley/Music/new CDs/Sara Bareilles - Little Voice'
+    a = AlbumInstance(albumdir)
+
+
+class FileInstance(object):
+    """
+    Represents one file in one location on disk.
+    """
+
+    def __init__(self, filepath):
+        """
+        """
+        self.path, self.filename = os.path.split(filepath)
+        self.name, ext = os.path.splitext(self.filename)
+        self.ext = ext[1:]
+
+        self.stat = os.stat(filepath)
+
+        self.is_music = (self.ext in EXTS)
+
+        if self.is_music:
+            num_str, name_str = self.name.split(sep=' - ', maxsplit=1)
+            self.track_num = int(num_str)
+            self.track_name = name_str
+            self.bytes = self.stat.st_size
+            self.mtime = datetime.datetime.fromtimestamp(self.stat.st_mtime)
+
 
 class AlbumInstance(object):
     """
@@ -26,24 +58,24 @@ class AlbumInstance(object):
 
         self.location = filepath
         # filelist does not include the path
-        self.filelist = [os.path.split(s)[-1] for s in os.listdir(filepath)]
+        self.filelist = [FileInstance(os.path.join(filepath, s))
+                         for s in os.listdir(filepath)]
+        self.musiclist = [f for f in self.filelist if f.is_music]
 
         self.list_by_ext = {}
+        self.has_ext = {}
         for ftype in EXTS:
-            # don't include the file path
             self.list_by_ext[ftype] = [
-                os.path.split(s)[-1]
-                for s in glob.glob(os.path.join(filepath, '*.' + ftype))]
+                f for f in self.musiclist if f.ext == ftype]
             self.has_ext[ftype] = bool(self.list_by_ext[ftype])
 
-        self.misc_files = []
-        for filename in os.listdir(filepath):
-            pass
-            if False:
-                self.misc_files.append(filename)
+        self.misc_files = [f for f in self.filelist if not f.is_music]
 
-        self.multidisk
-        self.n_tracks
+        if any(self.has_ext.values()):
+            self.multidisc = self.musiclist[0].track_num > 99
+
+            self.track_nums = set([f.track_num for f in self.musiclist])
+            self.n_tracks = len(self.track_nums)
 
     def find_duplicate_tracks(self):
         """
@@ -51,3 +83,7 @@ class AlbumInstance(object):
         """
 
         pass
+
+
+if __name__ == '__main__':
+    main()
