@@ -88,6 +88,33 @@ class AlbumInstance(object):
             _, tail = os.path.split(head)
         self.name = tail
 
+    def copy(self, target_dir, ext=None, rm_original=False):
+        """
+        Copy the album dir into target_dir.
+        if ext is not None, only copy files of this ext.
+        """
+
+        if ext not in EXTS:
+            ext = None
+
+        dest_dir = os.path.join(target_dir, self.name)
+        if os.path.isdir(this_dest_dir):
+            print('Warning: {} already exists, proceeding anyway'.format(
+                this_dest_dir))
+        else:
+            os.mkdir(this_dest_dir)
+
+        if ext is None:
+            filelist = self.filelist
+        else:
+            filelist = self.list_by_ext[ext]
+
+        for f in filelist:
+            shutil.copy2(f.fullpath,
+                         os.path.join(dest_dir, f.filename))
+            if rm_original:
+                self.del_file(f)
+
     def split_exts(self, target_dir, rm_original=False):
         """
         For album located in src_dir/album_dir:
@@ -99,12 +126,8 @@ class AlbumInstance(object):
             raise AbcdeException
 
         for ftype in EXTS:
-            this_dest_dir = os.path.join(target_dir, ftype, self.name)
-            for f in self.list_by_ext[ftype]:
-                shutil.copy2(f.fullpath,
-                             os.path.join(this_dest_dir, f.filename))
-                if rm_original:
-                    self.del_file(f)
+            this_dest_dir = os.path.join(target_dir, ftype)
+            self.copy(this_dest_dir, ext=ftype, rm_original=rm_original)
 
     def del_file(self, file_obj):
         """
