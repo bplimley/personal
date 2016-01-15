@@ -5,6 +5,7 @@ import io
 import os
 import shutil
 import datetime
+import pdb
 
 # 1. copy albums from newCDs to extHD mp3, ogg, flac folders.
 # 2. examine mp3, ogg, flac folders for missing albums.
@@ -88,7 +89,7 @@ class AlbumInstance(object):
             _, tail = os.path.split(head)
         self.name = tail
 
-    def copy(self, target_dir, ext=None, rm_original=False):
+    def copy(self, target_dir, ext=None, overwrite=False, rm_original=False):
         """
         Copy the album dir into target_dir.
         if ext is not None, only copy files of this ext.
@@ -97,12 +98,17 @@ class AlbumInstance(object):
         if ext not in EXTS:
             ext = None
 
+        if not os.path.isdir(target_dir):
+            os.mkdir(target_dir)
+
         dest_dir = os.path.join(target_dir, self.name)
-        if os.path.isdir(this_dest_dir):
+        if os.path.isdir(dest_dir) and overwrite:
             print('Warning: {} already exists, proceeding anyway'.format(
-                this_dest_dir))
+                dest_dir))
+        elif os.path.isdir(dest_dir):
+            return None
         else:
-            os.mkdir(this_dest_dir)
+            os.mkdir(dest_dir)
 
         if ext is None:
             filelist = self.filelist
@@ -112,10 +118,12 @@ class AlbumInstance(object):
         for f in filelist:
             shutil.copy2(f.fullpath,
                          os.path.join(dest_dir, f.filename))
-            if rm_original:
+
+        if rm_original:
+            for f in filelist:  # TODO: something besides a for loop!
                 self.del_file(f)
 
-    def split_exts(self, target_dir, rm_original=False):
+    def split_exts(self, target_dir, overwrite=False, rm_original=False):
         """
         For album located in src_dir/album_dir:
           copy src_dir/album_dir/*.mp3 to target_dir/mp3/album_dir/*.mp3
@@ -123,11 +131,12 @@ class AlbumInstance(object):
         """
 
         if not all(self.has_ext.values()):
-            raise AbcdeException
+            raise AbcdeException('File types not found')
 
         for ftype in EXTS:
             this_dest_dir = os.path.join(target_dir, ftype)
-            self.copy(this_dest_dir, ext=ftype, rm_original=rm_original)
+            self.copy(this_dest_dir, ext=ftype,
+                      overwrite=overwrite, rm_original=rm_original)
 
     def del_file(self, file_obj):
         """
@@ -136,7 +145,7 @@ class AlbumInstance(object):
         """
 
         if file_obj not in self.filelist:
-            raise AbcdeException
+            raise AbcdeException('Cannot delete file: file object not found')
 
         self.filelist.remove(file_obj)
         for ftype in EXTS:
@@ -167,6 +176,25 @@ def get_album_list(dirname):
 
     return album_list
 
+
+def split_albums(source_dir, target_dir,
+                 overwrite=False, rm_original=False, verbosity=1):
+    """
+    Split all albums in source_dir according to extensions, to
+    target_dir/mp3/album-name/ (for example)
+    """
+
+    albumlist = get_album_list(source_dir)
+
+    for album in albumlist:
+        try:
+            album.split_exts(
+                target_dir, overwrite=overwrite, rm_original=rm_original)
+            if verbosity > 0:
+                print('Completed ' + album.name)
+        except AbcdeException:
+            if verbosity > 0:
+                print(' Error on ' + album.name)
 
 class AbcdeException(Exception):
     pass
