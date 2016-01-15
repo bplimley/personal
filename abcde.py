@@ -113,7 +113,7 @@ class AlbumInstance(object):
         if ext is None:
             filelist = self.filelist
         else:
-            filelist = self.list_by_ext[ext]
+            filelist = self.list_by_ext[ext] + self.misc_files
 
         for f in filelist:
             shutil.copy2(f.fullpath,
@@ -153,12 +153,28 @@ class AlbumInstance(object):
                 self.list_by_ext[ftype].remove(file_obj)
         os.remove(file_obj.fullpath)
 
-    def find_duplicate_tracks(self):
+    def rm_duplicate_tracks(self, dry_run=True):
         """
         Examine album files for duplicate tracks with varied names.
         """
 
-        pass
+        for ftype in EXTS:
+            if (self.has_ext[ftype] and
+                    len(self.list_by_ext[ftype]) > len(self.track_nums)):
+                print('Found duplicate ' + ftype + ' files in ' + self.name)
+                dup_list = []
+                for i in range(max(self.track_nums)):
+                    t = i + 1   # track number from 1 to N, not 0 to N-1
+                    this = [f for f in self.list_by_ext[ftype]
+                                   if f.track_num == t]
+                    if len(this) > 1:
+                        dup_list.append(this)
+                        print('  Track ' + str(t) + ':')
+                        for trk in this:
+                            print('    ' + trk.name)
+                        if not dry_run:
+                            # resolve duplicates here or so
+                            pass
 
     def __str__(self):
         return self.location
