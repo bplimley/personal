@@ -120,8 +120,8 @@ class AlbumInstance(object):
                          os.path.join(dest_dir, f.filename))
 
         if rm_original:
-            for f in filelist:  # TODO: something besides a for loop!
-                self.del_file(f)
+            while filelist:
+                self.del_file(filelist.pop())
 
     def split_exts(self, target_dir, overwrite=False, rm_original=False):
         """
