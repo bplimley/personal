@@ -43,8 +43,16 @@ class FileInstance(object):
         self.is_music = (self.ext in EXTS)
 
         if self.is_music:
-            num_str, name_str = self.name.split(sep=' - ', maxsplit=1)
-            self.track_num = int(num_str)
+            try:
+                num_str, name_str = self.name.split(sep=' - ', maxsplit=1)
+            except ValueError:
+                # failed to split
+                num_str = '0'
+                name_str = self.name
+            try:
+                self.track_num = int(num_str)
+            except ValueError:
+                self.track_num = 0
             self.track_name = name_str
             self.bytes = self.stat.st_size
             self.mtime = datetime.datetime.fromtimestamp(self.stat.st_mtime)
@@ -61,12 +69,15 @@ class AlbumInstance(object):
         """
 
         self.location = filepath
-        self.get_name()
+        self.get_names()
 
         # filelist does not include the path
         self.filelist = [FileInstance(os.path.join(filepath, s))
-                         for s in os.listdir(filepath)]
+                         for s in os.listdir(filepath)
+                         if os.path.isfile(os.path.join(filepath, s))]
         self.musiclist = [f for f in self.filelist if f.is_music]
+        if any([f.track_num == 0 for f in self.musiclist]):
+            print('File string error in ' + self.name)
 
         self.list_by_ext = {}
         self.has_ext = {}
@@ -83,11 +94,20 @@ class AlbumInstance(object):
             self.track_nums = set([f.track_num for f in self.musiclist])
             self.n_tracks = len(self.track_nums)
 
-    def get_name(self):
+    def get_names(self):
+        # full name
         head, tail = os.path.split(self.location)
         if tail == '':
             _, tail = os.path.split(head)
         self.name = tail
+
+        # artist and album names
+        try:
+            artist_name, album_name = self.name.split(sep=' - ', maxsplit=1)
+        except ValueError:
+            artist_name, album_name = ('', self.name)
+        self.artist = artist_name
+        self.album = album_name
 
     def copy(self, target_dir, ext=None, overwrite=False, rm_original=False):
         """
