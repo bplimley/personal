@@ -234,6 +234,16 @@ def split_albums(source_dir, target_dir,
             if verbosity > 0:
                 print(' Error on ' + album.name)
 
+
+def copy_folders(source_dir, target_dir,
+                 overwrite=False, rm_original=False, verbosity=1):
+    """
+    Copy source_dir/mp3/* to target_dir/mp3/*, and the same for ogg and flac
+    """
+
+    # TODO
+    pass
+
 class AbcdeException(Exception):
     pass
 
