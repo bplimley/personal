@@ -205,7 +205,9 @@ def get_album_list(dirname):
     Return a list of albums from the contents of directory, dirname.
     """
 
-    album_dir_list = [os.path.join(dirname, d) for d in os.listdir(dirname)]
+    album_dir_list = [os.path.join(dirname, d)
+                      for d in os.listdir(dirname)
+                      if os.path.isdir(os.path.join(dirname, d))]
     album_dir_list.sort()
 
     album_list = [AlbumInstance(a) for a in album_dir_list]
