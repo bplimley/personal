@@ -16,6 +16,10 @@ import pdb
 
 EXTS = ('flac', 'mp3', 'ogg')
 
+EXT_HD_PATH = '/media/plimley/MUSIC/'
+HOME_PATH = '/home/plimley/Music/'
+NEW_CDS_PATH = '/home/plimley/Music/new CDs/'   # this one is not by ext
+
 
 def main():
     # tests
@@ -23,6 +27,19 @@ def main():
     a = AlbumInstance(albumdir)
 
     album_list = get_album_list('/home/plimley/Music/new CDs')
+
+
+def list_duplicates_on_ext():
+    ext = EXTS[2]
+    albumdir = os.path.join(EXT_HD_PATH, ext, 'CDs')
+    album_list = get_album_list(albumdir, verbosity=True)
+    print('Begin duplicate tracks')
+    n = 0
+    for album in album_list:
+        album.rm_duplicate_tracks(dry_run=True)
+        n += 1
+        if n % 10 == 0:
+            input()     # wait for Enter
 
 
 class FileInstance(object):
@@ -186,7 +203,7 @@ class AlbumInstance(object):
                 for i in range(max(self.track_nums)):
                     t = i + 1   # track number from 1 to N, not 0 to N-1
                     this = [f for f in self.list_by_ext[ftype]
-                                   if f.track_num == t]
+                            if f.track_num == t]
                     if len(this) > 1:
                         dup_list.append(this)
                         print('  Track ' + str(t) + ':')
@@ -200,7 +217,7 @@ class AlbumInstance(object):
         return self.location
 
 
-def get_album_list(dirname):
+def get_album_list(dirname, verbosity=False):
     """
     Return a list of albums from the contents of directory, dirname.
     """
@@ -210,7 +227,16 @@ def get_album_list(dirname):
                       if os.path.isdir(os.path.join(dirname, d))]
     album_dir_list.sort()
 
-    album_list = [AlbumInstance(a) for a in album_dir_list]
+    album_list = []
+    for a in album_dir_list:
+        try:
+            if os.path.isdir(a):
+                this_album = AlbumInstance(a)
+                album_list.append(this_album)
+        except PermissionError:
+            # lost+found
+            pass
+        print('.', end='')
 
     return album_list
 
@@ -235,6 +261,7 @@ def split_albums(source_dir, target_dir,
                 print(' Error on ' + album.name)
 
 
+<<<<<<< HEAD
 def copy_folders(source_dir, target_dir,
                  overwrite=False, rm_original=False, verbosity=1):
     """
@@ -244,6 +271,8 @@ def copy_folders(source_dir, target_dir,
     # TODO
     pass
 
+=======
+>>>>>>> 64b33c98a2dd8d3f0024575511d054210af6a2c1
 class AbcdeException(Exception):
     pass
 
