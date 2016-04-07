@@ -261,7 +261,6 @@ def split_albums(source_dir, target_dir,
                 print(' Error on ' + album.name)
 
 
-<<<<<<< HEAD
 def copy_folders(source_dir, target_dir,
                  overwrite=False, rm_original=False, verbosity=1):
     """
@@ -271,8 +270,6 @@ def copy_folders(source_dir, target_dir,
     # TODO
     pass
 
-=======
->>>>>>> 64b33c98a2dd8d3f0024575511d054210af6a2c1
 class AbcdeException(Exception):
     pass
 
