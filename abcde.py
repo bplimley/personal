@@ -1,11 +1,9 @@
 #!/usr/bin/python3
 
 import glob
-import io
 import os
 import shutil
 import datetime
-import pdb
 
 # 1. copy albums from newCDs to extHD mp3, ogg, flac folders.
 # 2. examine mp3, ogg, flac folders for missing albums.
@@ -24,9 +22,9 @@ NEW_CDS_PATH = '/home/plimley/Music/new CDs/'   # this one is not by ext
 def main():
     # tests
     albumdir = '/home/plimley/Music/new CDs/Sara Bareilles - Little Voice'
-    a = AlbumInstance(albumdir)
+    AlbumInstance(albumdir)
 
-    album_list = get_album_list('/home/plimley/Music/new CDs')
+    get_album_list('/home/plimley/Music/new CDs')
 
 
 def list_duplicates_on_ext():
@@ -269,6 +267,7 @@ def copy_folders(source_dir, target_dir,
 
     # TODO
     pass
+
 
 class AbcdeException(Exception):
     pass
