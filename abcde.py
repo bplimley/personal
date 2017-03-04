@@ -16,7 +16,43 @@ EXTS = ('flac', 'mp3', 'ogg')
 
 EXT_HD_PATH = '/media/plimley/MUSIC/'
 HOME_PATH = '/home/plimley/Music/'
-NEW_CDS_PATH = '/home/plimley/Music/new CDs/'   # this one is not by ext
+# NEW_CDS_PATH = '/home/plimley/Music/new CDs/'   # this one is not by ext
+NEW_CDS_PATH = os.path.join(EXT_HD_PATH, 'new CDs')
+
+SANSA_PATH = '/media/plimley/sansa-sd'
+
+
+def main1():
+    """Copy albums from newCDs to external HD mp3, ogg, flac folders."""
+
+    source_album_list = get_album_list(NEW_CDS_PATH)
+    for ext in EXTS:
+        target_dir = os.path.join(EXT_HD_PATH, ext, 'CDs')
+        target_album_list = get_album_list(target_dir)
+        target_albumnames = [a.name for a in target_album_list]
+        for album in source_album_list:
+            if album.name not in target_albumnames:
+                print('Copying {} into {}'.format(album.name, ext))
+                album.copy(target_dir, ext=ext)
+
+
+def check_sansa():
+    """Find albums that are in extHD ogg or mp3, but not on sansa.
+
+    Both external HD and Sansa should be plugged in."""
+
+    sansa_list = get_album_list(SANSA_PATH)
+    sansa_names = [a.name for a in sansa_list]
+
+    checked_list = []
+
+    for ext in EXTS[1:]:
+        album_list = get_album_list(os.path.join(EXT_HD_PATH, ext, 'CDs'))
+        for album in album_list:
+            if (album.name not in sansa_names and
+                    album.name not in checked_list):
+                print('Missing {}'.format(album.name))
+                checked_list.append(album.name)
 
 
 def main():
@@ -28,7 +64,10 @@ def main():
 
 
 def list_duplicates_on_ext():
-    ext = EXTS[2]
+    """
+    Go through
+    """
+    ext = EXTS[1]
     albumdir = os.path.join(EXT_HD_PATH, ext, 'CDs')
     album_list = get_album_list(albumdir, verbosity=True)
     print('Begin duplicate tracks')
@@ -158,10 +197,11 @@ class AlbumInstance(object):
             while filelist:
                 self.del_file(filelist.pop())
 
-    def split_exts(self, target_dir, overwrite=False, rm_original=False):
+    def split_exts(self, target_dir, subdir=None,
+                   overwrite=False, rm_original=False):
         """
         For album located in src_dir/album_dir:
-          copy src_dir/album_dir/*.mp3 to target_dir/mp3/album_dir/*.mp3
+          copy src_dir/album_dir/*.mp3 to target_dir/mp3/subdir/album_dir/*.mp3
         and similarly for each extension type.
         """
 
@@ -169,7 +209,10 @@ class AlbumInstance(object):
             raise AbcdeException('File types not found')
 
         for ftype in EXTS:
-            this_dest_dir = os.path.join(target_dir, ftype)
+            if subdir is None:
+                this_dest_dir = os.path.join(target_dir, ftype)
+            else:
+                this_dest_dir = os.path.join(target_dir, ftype, subdir)
             self.copy(this_dest_dir, ext=ftype,
                       overwrite=overwrite, rm_original=rm_original)
 
