@@ -1,17 +1,17 @@
 # abcde_cleanup.py
 
+from __future__ import print_function
 import glob
-import io
 import os
 import shutil
 
-BASE_MUSIC_DIR = unicode("/home/plimley/Music")
-NEW_MUSIC_DIR = os.path.join(BASE_MUSIC_DIR,"new CDs")
-EXT_MUSIC_DIR = unicode("/media/plimley/MUSIC")
-EXT_MUSIC_SUBDIR = unicode("CDs")
-# AUDIO_TYPES = ("flac","mp3","ogg")
-AUDIO_TYPES = ("flac",)
+BASE_MUSIC_DIR = u'/home/plimley/Music'
+NEW_MUSIC_DIR = os.path.join(BASE_MUSIC_DIR, 'new CDs')
+EXT_MUSIC_DIR = u'/media/plimley/MUSIC'
+EXT_MUSIC_SUBDIR = u'CDs'
+AUDIO_TYPES = (u'flac', u"mp3", u"ogg")
 # flac, mp3, ogg folders are located in BASE_MUSIC_DIR
+
 
 def identify_new_albums(audio_type):
     """
@@ -20,15 +20,16 @@ def identify_new_albums(audio_type):
     not in the latter.
     """
 
-    old_music_dir = os.path.join(BASE_MUSIC_DIR,audio_type)
-    old_music_dirlist = [album
-        for album in os.listdir(old_music_dir)
-        if os.path.isdir(os.path.join(old_music_dir,album))]
-    new_music_dirlist = [album
-        for album in os.listdir(NEW_MUSIC_DIR)
-        if os.path.isdir(os.path.join(NEW_MUSIC_DIR,album))
+    old_music_dir = os.path.join(BASE_MUSIC_DIR, audio_type)
+    old_music_dirlist = [
+        album for album in os.listdir(old_music_dir)
+        if os.path.isdir(os.path.join(old_music_dir, album))]
+    new_music_dirlist = [
+        album for album in os.listdir(NEW_MUSIC_DIR)
+        if os.path.isdir(os.path.join(NEW_MUSIC_DIR, album))
         if album not in old_music_dirlist]
     return new_music_dirlist
+
 
 def copy_album(album, audio_type, del_flag=False):
     """
@@ -41,11 +42,11 @@ def copy_album(album, audio_type, del_flag=False):
     album = check_unicode(album)
     audio_type = check_unicode(audio_type)
 
-    this_source_dir = os.path.join(NEW_MUSIC_DIR,album)
-    this_dest_dir = os.path.join(BASE_MUSIC_DIR,audio_type,album)
+    this_source_dir = os.path.join(NEW_MUSIC_DIR, album)
+    this_dest_dir = os.path.join(BASE_MUSIC_DIR, audio_type, album)
     os.mkdir(this_dest_dir)
     filelist = glob.glob(os.path.join(
-            this_source_dir,"*." + audio_type))
+            this_source_dir, "*." + audio_type))
     # move all of the files from the album before removing any.
     # Thus, if any errors come up, all of the original files remain
     # in place.
@@ -55,6 +56,7 @@ def copy_album(album, audio_type, del_flag=False):
         for f in filelist:
             os.remove(f)
 
+
 def check_unicode(input_string):
     try:
         output_string = input_string.decode('utf-8')
@@ -62,7 +64,8 @@ def check_unicode(input_string):
         output_string = input_string
     return output_string
 
-def copy_all_albums(del_flag=True,verbose=1):
+
+def copy_all_albums(del_flag=True, verbose=1):
     """
     Local re-organization of audio files into folders by type.
 
@@ -72,9 +75,10 @@ def copy_all_albums(del_flag=True,verbose=1):
     album_list = identify_new_albums(audio_type).sort()
     for album in album_list:
         for audio_type in AUDIO_TYPES:
-            if verbose>0:
-                print "Copying " + audio_type + " from " + album + "..."
+            if verbose > 0:
+                print('Copying {} from {}...'.format(audio_type, album))
             copy_album(album, audio_type, del_flag)
+
 
 def copy_to_ext(album, audio_type, del_flag=False):
     """
@@ -86,16 +90,17 @@ def copy_to_ext(album, audio_type, del_flag=False):
     album = check_unicode(album)
     audio_type = check_unicode(audio_type)
 
-    this_source_dir = os.path.join(BASE_MUSIC_DIR,audio_type,album)
-    this_dest_dir = os.path.join(EXT_MUSIC_DIR,audio_type,
-                                 EXT_MUSIC_SUBDIR,album)
+    this_source_dir = os.path.join(BASE_MUSIC_DIR, audio_type, album)
+    this_dest_dir = os.path.join(EXT_MUSIC_DIR, audio_type,
+                                 EXT_MUSIC_SUBDIR, album)
     os.mkdir(this_dest_dir)
     filelist = os.listdir(this_source_dir).sort()
     for f in filelist:
-        shutil.copy2(os.path.join(this_source_dir,f), this_dest_dir)
+        shutil.copy2(os.path.join(this_source_dir, f), this_dest_dir)
     if del_flag:
         for f in filelist:
-            os.remove(os.path.join(this_source_dir,f))
+            os.remove(os.path.join(this_source_dir, f))
+
 
 def copy_all_to_ext(del_flag=False):
     """
@@ -103,8 +108,6 @@ def copy_all_to_ext(del_flag=False):
     """
 
 
-
-# use this for running from command line:
 if __name__ == "__main__":
     import sys
     my_function(sys.argv[1])
